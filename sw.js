@@ -2,7 +2,7 @@
  * Les fichiers de la liste ASSETS sont téléchargés à l'installation ; ensuite tout fonctionne sans connexion.
  * Stratégie : cache d'abord, puis mise à jour en arrière-plan.
  * La liste et le numéro de version sont générés par « node tools/build.js » : ne les modifiez pas à la main. */
-const VERSION = 'devquiz-646b7aa470';
+const VERSION = 'devquiz-2639321a62';
 const ASSETS = [
 /*ASSETS*/
   './',

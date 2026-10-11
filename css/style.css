@@ -261,12 +261,7 @@ input[type=range]:focus-visible{outline:2px solid var(--am);outline-offset:6px}
    Liste déroulante des catégories + chips
    ═══════════════════════════════════════════════ */
 
-.cat-dropdown-wrapper {
-  position: relative;
-  isolation: isolate;
-  z-index: 50;
-}
-
+/* Bouton "Langages ▼" à droite du titre */
 .cat-toggle-btn {
   display: flex;
   align-items: center;
@@ -281,28 +276,42 @@ input[type=range]:focus-visible{outline:2px solid var(--am);outline-offset:6px}
   cursor: pointer;
   transition: all .2s var(--ease);
 }
-.cat-toggle-btn:hover { border-color: var(--v); background: rgba(139,124,255,.1); }
-.cat-toggle-btn .arrow { font-size: 10px; transition: transform .3s var(--ease); }
-.cat-toggle-btn.active .arrow { transform: rotate(180deg); }
+.cat-toggle-btn:hover {
+  border-color: var(--v);
+  background: rgba(139,124,255,.1);
+}
+.cat-toggle-btn .arrow {
+  font-size: 10px;
+  transition: transform .3s var(--ease);
+}
+.cat-toggle-btn.active .arrow {
+  transform: rotate(180deg);
+}
 
+/* Menu flottant des 7 catégories */
+.cat-heading{position:relative}
 .cat-menu {
-  position: fixed;
-  min-width: 280px;
-  max-width: 90vw;
-  background: #1a2347;
-  border: 2px solid var(--v);
-  border-radius: 14px;
-  padding: 8px;
-  z-index: 9999;
-  box-shadow: 0 20px 60px -10px rgba(0,0,0,0.95),
-              0 0 0 4px rgba(139,124,255,0.15);
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: min(280px, calc(100vw - 48px));
+  max-height: min(70vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  gap: 4px;
+  margin: 0;
+  padding: 8px;
+  background: var(--s2);
+  border: 1px solid var(--v);
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(0,0,0,.55);
 }
-.cat-menu.hidden { display: none; }
+.cat-menu.hidden {
+  display: none;
+}
 
 .cat-menu-item {
   padding: 12px 14px;
@@ -313,13 +322,19 @@ input[type=range]:focus-visible{outline:2px solid var(--am);outline-offset:6px}
   font-size: 14.5px;
   text-align: left;
   cursor: pointer;
-  transition: background .15s;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: background .15s;
 }
-.cat-menu-item:hover { background: rgba(139,124,255,.2); }
-.cat-menu-item.active { background: var(--v); color: #0b1020; font-weight: 700; }
+.cat-menu-item:hover {
+  background: rgba(139,124,255,.2);
+}
+.cat-menu-item.active {
+  background: var(--v);
+  color: #0b1020;
+  font-weight: 700;
+}
 .cat-menu-item .count {
   font: 600 12px var(--mono);
   color: var(--am);
@@ -327,16 +342,21 @@ input[type=range]:focus-visible{outline:2px solid var(--am);outline-offset:6px}
   background: rgba(255,180,84,.15);
   border-radius: 99px;
 }
-.cat-menu-item.active .count { background: rgba(0,0,0,.25); color: #0b1020; }
+.cat-menu-item.active .count {
+  background: rgba(0,0,0,.25);
+  color: #0b1020;
+}
 
-/* Chips des notions sélectionnées */
+/* Chips des notions sélectionnées (en haut du panneau) */
 .selected-notions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin: 4px 0 16px;
 }
-.selected-notions:empty { display: none; }
+.selected-notions:empty {
+  display: none;
+}
 .selected-notions .notion-chip {
   display: flex;
   align-items: center;
@@ -364,7 +384,9 @@ input[type=range]:focus-visible{outline:2px solid var(--am);outline-offset:6px}
   padding: 0;
   line-height: 1;
 }
-.selected-notions .notion-chip .remove:hover { background: rgba(0,0,0,.4); }
+.selected-notions .notion-chip .remove:hover {
+  background: rgba(0,0,0,.4);
+}
 @keyframes chipIn {
   from { opacity: 0; transform: translateY(-8px) scale(.9); }
   to   { opacity: 1; transform: none; }

@@ -314,31 +314,15 @@ function openCatMenu() {
   const menu = $('#catMenu');
   const toggle = $('#catToggle');
   if (!menu || !toggle) return;
-
-  // Calculer la position du menu sous le bouton, aligné à droite
-  const rect = toggle.getBoundingClientRect();
-  const menuWidth = 280; // correspond à min-width
-  const margin = 8;
-  const gap = 8;
-
-  // Aligner le menu à droite du bouton, mais sans dépasser l'écran
-  let left = rect.right - menuWidth;
-  if (left < margin) left = margin;
-  if (left + menuWidth > window.innerWidth - margin) {
-    left = window.innerWidth - menuWidth - margin;
-  }
-
-  menu.style.top = (rect.bottom + gap) + 'px';
-  menu.style.left = left + 'px';
-  menu.style.right = 'auto';
-
   menu.classList.remove('hidden');
   toggle.classList.add('active');
+  toggle.setAttribute('aria-expanded', 'true');
 }
 
 function closeCatMenu() {
   $('#catMenu').classList.add('hidden');
   $('#catToggle').classList.remove('active');
+  $('#catToggle').setAttribute('aria-expanded', 'false');
 }
 
 /* Chips des notions sélectionnées (en haut) */
@@ -502,6 +486,12 @@ function initHome() {
   document.addEventListener('click', (e) => {
     if (!$('#catMenu').contains(e.target) && !$('#catToggle').contains(e.target)) {
       closeCatMenu();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('#catMenu').classList.contains('hidden')) {
+      closeCatMenu();
+      $('#catToggle').focus();
     }
   });
 

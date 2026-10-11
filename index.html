@@ -49,16 +49,17 @@
 
     <div class="stats reveal" id="stats"></div>
 
-    <section class="panel reveal" aria-labelledby="h-themes">
-      <div class="panel-h">
-        <h2 id="h-themes">Notions et langages</h2>
-        <div class="cat-dropdown-wrapper">
-          <button id="catToggle" class="cat-toggle-btn" type="button">
+        <section class="panel reveal" aria-labelledby="h-themes">
+      <div class="cat-heading">
+        <div class="panel-h">
+          <h2 id="h-themes">Notions et langages</h2>
+          <button id="catToggle" class="cat-toggle-btn" type="button" aria-controls="catMenu" aria-expanded="false">
             <span id="catToggleLabel">Langages</span>
             <span class="arrow">▼</span>
           </button>
-          <div id="catMenu" class="cat-menu hidden"></div>
         </div>
+        <!-- Menu flottant, superposé à la liste des notions -->
+        <div id="catMenu" class="cat-menu hidden"></div>
       </div>
 
       <!-- Notions sélectionnées (chips en haut) -->
