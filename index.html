@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DevQuiz — le quiz du développement web</title>
+<meta name="description" content="Quiz de développement web : HTML, CSS, JavaScript, PHP, SQL, Git, sécurité… Questions aléatoires, installable et utilisable hors ligne.">
+<meta name="theme-color" content="#060c30">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DevQuiz">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Séquence de démarrage -->
+<div id="boot" aria-hidden="true">
+  <img id="bootlogo" src="icons/logo.png" width="220" height="220" alt="">
+  <pre id="bootlog"></pre>
+  <small>toucher l'écran pour passer</small>
+</div>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="cur-dot" aria-hidden="true"></div>
+<div id="cur-ring" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<main id="app">
+
+  <!-- ═════════ ACCUEIL ═════════ -->
+  <section id="home" class="screen active" aria-label="Accueil">
+    <header class="hero">
+      <div class="stage" aria-hidden="true">
+        <div class="cube"><div class="cube-in"><i>HTML</i><i>CSS</i><i>JS</i><i>PHP</i><i>SQL</i><i>GIT</i></div></div>
+      </div>
+      <h1 class="glitch" data-t="DevQuiz">DevQuiz</h1>
+      <p class="sub">Le quiz du développement web. Les questions changent à chaque partie.</p>
+      <div class="badges">
+        <span id="net" class="pill">En ligne</span>
+        <button id="installBtn" class="pill pill-btn" type="button" hidden>Installer l'application</button>
+      </div>
+      <p id="tip" class="tip" hidden></p>
+    </header>
+
+    <div class="stats reveal" id="stats"></div>
+
+    <section class="panel reveal" aria-labelledby="h-themes">
+      <div class="panel-h">
+        <h2 id="h-themes">Notions et langages</h2>
+        <div class="cat-dropdown-wrapper">
+          <button id="catToggle" class="cat-toggle-btn" type="button">
+            <span id="catToggleLabel">Langages</span>
+            <span class="arrow">▼</span>
+          </button>
+          <div id="catMenu" class="cat-menu hidden"></div>
+        </div>
+      </div>
+
+      <!-- Notions sélectionnées (chips en haut) -->
+      <div id="selectedNotions" class="selected-notions"></div>
+
+      <input id="search" class="search" type="search" placeholder="Rechercher une notion, un langage…" aria-label="Rechercher une notion" autocomplete="off">
+      <p id="selCount" class="selcount" aria-live="polite"></p>
+      <div id="cats" class="groups"></div>
+      <p id="noRes" class="empty" hidden>Aucune notion ne correspond à votre recherche.</p>
+    </section>
+
+    <section class="panel reveal" aria-labelledby="h-set">
+      <h2 id="h-set">Réglages</h2>
+      <div class="row">
+        <span>Nombre de questions</span>
+        <div class="seg" id="seg" role="group" aria-label="Nombre de questions">
+          <button type="button" data-n="10">10</button>
+          <button type="button" data-n="20">20</button>
+          <button type="button" data-n="30">30</button>
+          <button type="button" data-n="50">50</button>
+          <button type="button" data-n="100">100</button>
+        </div>
+      </div>
+      <label class="row sw"><span>Inclure des questions à réponse libre</span><input type="checkbox" id="optOpen"><i></i></label>
+      <label class="row sw"><span>Chronomètre par question</span><input type="checkbox" id="optTimer"><i></i></label>
+    </section>
+
+    <section class="panel reveal" aria-labelledby="h-snd">
+      <h2 id="h-snd">Son et musique</h2>
+      <label class="row sw"><span>Musique de fond pendant la partie</span><input type="checkbox" id="optMusic"><i></i></label>
+      <div class="row vol"><span>Volume de la musique</span><input type="range" id="volMusic" min="0" max="100" step="5" aria-label="Volume de la musique"></div>
+      <label class="row sw"><span>Effets sonores (réussite, victoire, défaite)</span><input type="checkbox" id="optSfx"><i></i></label>
+      <div class="row vol"><span>Volume des effets</span><input type="range" id="volSfx" min="0" max="100" step="5" aria-label="Volume des effets sonores"></div>
+      <label class="row sw"><span>Vibrations (sur mobile)</span><input type="checkbox" id="optVibrate"><i></i></label>
+      <div class="row test"><span>Écouter</span>
+        <div class="seg" role="group" aria-label="Écouter les sons">
+          <button type="button" id="tMusic">Musique</button>
+          <button type="button" id="tWin">Victoire</button>
+          <button type="button" id="tLose">Défaite</button>
+        </div>
+      </div>
+    </section>
+
+    <button id="startBtn" class="cta reveal" type="button">Lancer la partie</button>
+    <p class="foot reveal">Les questions changent à chaque partie. Aucune connexion n'est nécessaire une fois l'application chargée.</p>
+  </section>
+
+  <!-- ═════════ QUIZ ═════════ -->
+  <section id="quiz" class="screen" aria-label="Quiz">
+    <div class="qtop">
+      <button id="quitBtn" class="ghost" type="button" aria-label="Quitter la partie">✕</button>
+      <button id="musicBtn" class="ghost" type="button" aria-label="Activer ou couper la musique" aria-pressed="true">♪</button>
+      <div class="qinfo">
+        <span id="qcount">1 / 20</span>
+        <span id="qscore">0 pts</span>
+        <span id="qstreak" class="streak">série 0</span>
+      </div>
+      <div id="ring" class="ring" aria-hidden="true">
+        <svg viewBox="0 0 48 48"><circle class="tr" cx="24" cy="24" r="20"/><circle class="fg" id="ringfg" cx="24" cy="24" r="20"/></svg>
+        <b id="ringtxt">20</b>
+      </div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+
+    <article id="qcard" class="qcard tilt" data-max="3">
+      <span id="qtag" class="tag"></span>
+      <h2 id="qtext"></h2>
+      <p id="fmtHint" class="fmt" hidden></p>
+      <div id="opts" class="opts"></div>
+      <form id="openForm" class="open" autocomplete="off" hidden>
+        <input id="openIn" type="text" placeholder="Votre réponse…" aria-label="Votre réponse" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
+        <div class="open-b">
+          <button class="cta sm" type="submit">Valider</button>
+          <button id="skipBtn" class="ghost-btn" type="button">Je ne sais pas</button>
+        </div>
+      </form>
+      <div id="fb" class="fb" hidden>
+        <p id="fbTitle" class="fb-t"></p>
+        <p id="fbAns" class="fb-a" hidden></p>
+        <p id="fbFmt" class="fb-f" hidden></p>
+        <p id="fbExp" class="fb-e"></p>
+        <div class="fb-b">
+          <button id="overBtn" class="ghost-btn" type="button" hidden>Ma réponse était correcte</button>
+          <button id="nextBtn" class="cta sm" type="button">Question suivante</button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ═════════ RÉSULTATS ═════════ -->
+  <section id="result" class="screen" aria-label="Résultats">
+    <div class="rcard tilt" data-max="4">
+      <span class="tag">Résultats</span>
+      <div class="rring">
+        <svg viewBox="0 0 120 120"><circle class="tr" cx="60" cy="60" r="52"/><circle class="fg" id="rfg" cx="60" cy="60" r="52"/></svg>
+        <div><b id="rpct">0 %</b><small id="rscore"></small></div>
+      </div>
+      <h2 id="rtitle"></h2>
+      <p id="rsub" class="sub"></p>
+      <div class="rstats" id="rstats"></div>
+      <div class="rbtns">
+        <button id="againBtn" class="cta" type="button">Rejouer</button>
+        <button id="homeBtn" class="ghost-btn" type="button">Accueil</button>
+      </div>
+    </div>
+    <section class="panel" id="revPanel">
+      <h2>À revoir</h2>
+      <div id="review"></div>
+    </section>
+  </section>
+
+</main>
+
+<script src="js/questions.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/manifest.js"></script>
+<script src="js/theme-icons.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
