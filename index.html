@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://cdn.jsdelivr.net https://cdn.simpleicons.org; connect-src 'self'; font-src 'self'; media-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>DevQuiz — le quiz du développement web</title>
-<meta name="description" content="Quiz de développement web : HTML, CSS, JavaScript, PHP, SQL, Git, sécurité… Questions aléatoires, installable et utilisable hors ligne.">
-<meta name="theme-color" content="#060c30">
+<meta name="description" content="Quiz pour développeurs : HTML, CSS, JavaScript, PHP, SQL, Git, sécurité, cloud… Questions aléatoires, installable et utilisable hors ligne.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#060c2f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
@@ -17,161 +19,214 @@
 </head>
 <body>
 
-<!-- Séquence de démarrage -->
-<div id="boot" aria-hidden="true">
-  <img id="bootlogo" src="icons/logo.png" width="220" height="220" alt="">
-  <pre id="bootlog"></pre>
-  <small>toucher l'écran pour passer</small>
+<!-- Écran d'entrée : un geste de l'utilisateur est nécessaire pour que le navigateur autorise le son -->
+<div id="boot" role="dialog" aria-modal="true" aria-label="Bienvenue dans DevQuiz">
+  <img id="bootlogo" src="icons/logo.png" width="240" height="240" alt="DevQuiz">
+  <p class="boot-tag">Le quiz des développeurs</p>
+  <button id="bootEnter" class="btn primary lg" type="button">Entrer</button>
+  <small class="boot-note">Le son sera activé à l'entrée. Vous pourrez le régler à tout moment.</small>
 </div>
 
-<canvas id="bg" aria-hidden="true"></canvas>
 <canvas id="fx" aria-hidden="true"></canvas>
-<div id="cur-dot" aria-hidden="true"></div>
-<div id="cur-ring" aria-hidden="true"></div>
-<div id="toast" role="status" aria-live="polite"></div>
 
-<main id="app">
+<header class="top">
+  <div class="brand"><img src="icons/favicon-64.png" width="30" height="30" alt=""><span>Dev<b>Quiz</b></span></div>
+  <div class="top-actions">
+    <button id="btnMusic" class="iconbtn" type="button" aria-label="Couper ou activer la musique" aria-pressed="true" title="Musique">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/><line class="slash" x1="3" y1="3" x2="21" y2="21"/></svg>
+    </button>
+    <button id="btnStats" class="iconbtn" type="button" aria-label="Statistiques" title="Statistiques">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </button>
+    <button id="btnHelp" class="iconbtn" type="button" aria-label="Aide : comment jouer" title="Aide">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
+    <button id="btnSettings" class="iconbtn" type="button" aria-label="Réglages" title="Réglages">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </div>
+</header>
 
-  <!-- ═════════ ACCUEIL ═════════ -->
-  <section id="home" class="screen active" aria-label="Accueil">
-    <header class="hero">
+<main id="main">
+  <section id="card" class="card" aria-label="Jeu">
+
+    <!-- État « prêt à jouer » -->
+    <div id="idle" class="idle">
       <div class="stage" aria-hidden="true">
         <div class="cube"><div class="cube-in"><i>HTML</i><i>CSS</i><i>JS</i><i>PHP</i><i>SQL</i><i>GIT</i></div></div>
       </div>
-      <h1 class="glitch" data-t="DevQuiz">DevQuiz</h1>
-      <p class="sub">Le quiz du développement web. Les questions changent à chaque partie.</p>
-      <div class="badges">
-        <span id="net" class="pill">En ligne</span>
-        <button id="installBtn" class="pill pill-btn" type="button" hidden>Installer l'application</button>
+      <h1 class="h1">Testez vos connaissances de développeur</h1>
+      <p class="lead" id="lead"></p>
+
+      <button id="btnNotions" class="field" type="button" aria-haspopup="dialog">
+        <span class="field-l">Notions et langages</span>
+        <span class="field-v" id="sumNotions"></span>
+        <span class="field-s" id="sumList"></span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <div class="chips" id="chips"></div>
+
+      <div class="actions">
+        <button id="btnPlay" class="btn primary lg" type="button">Jouer</button>
+        <button id="btnResume" class="btn lg" type="button" hidden>Reprendre la partie</button>
       </div>
-      <p id="tip" class="tip" hidden></p>
-    </header>
-
-    <div class="stats reveal" id="stats"></div>
-
-        <section class="panel reveal" aria-labelledby="h-themes">
-      <div class="cat-heading">
-        <div class="panel-h">
-          <h2 id="h-themes">Notions et langages</h2>
-          <button id="catToggle" class="cat-toggle-btn" type="button" aria-controls="catMenu" aria-expanded="false">
-            <span id="catToggleLabel">Langages</span>
-            <span class="arrow">▼</span>
-          </button>
-        </div>
-        <!-- Menu flottant, superposé à la liste des notions -->
-        <div id="catMenu" class="cat-menu hidden"></div>
-      </div>
-
-      <!-- Notions sélectionnées (chips en haut) -->
-      <div id="selectedNotions" class="selected-notions"></div>
-
-      <input id="search" class="search" type="search" placeholder="Rechercher une notion, un langage…" aria-label="Rechercher une notion" autocomplete="off">
-      <p id="selCount" class="selcount" aria-live="polite"></p>
-      <div id="cats" class="groups"></div>
-      <p id="noRes" class="empty" hidden>Aucune notion ne correspond à votre recherche.</p>
-    </section>
-
-    <section class="panel reveal" aria-labelledby="h-set">
-      <h2 id="h-set">Réglages</h2>
-      <div class="row">
-        <span>Nombre de questions</span>
-        <div class="seg" id="seg" role="group" aria-label="Nombre de questions">
-          <button type="button" data-n="10">10</button>
-          <button type="button" data-n="20">20</button>
-          <button type="button" data-n="30">30</button>
-          <button type="button" data-n="50">50</button>
-          <button type="button" data-n="100">100</button>
-        </div>
-      </div>
-      <label class="row sw"><span>Inclure des questions à réponse libre</span><input type="checkbox" id="optOpen"><i></i></label>
-      <label class="row sw"><span>Chronomètre par question</span><input type="checkbox" id="optTimer"><i></i></label>
-    </section>
-
-    <section class="panel reveal" aria-labelledby="h-snd">
-      <h2 id="h-snd">Son et musique</h2>
-      <label class="row sw"><span>Musique de fond pendant la partie</span><input type="checkbox" id="optMusic"><i></i></label>
-      <div class="row vol"><span>Volume de la musique</span><input type="range" id="volMusic" min="0" max="100" step="5" aria-label="Volume de la musique"></div>
-      <label class="row sw"><span>Effets sonores (réussite, victoire, défaite)</span><input type="checkbox" id="optSfx"><i></i></label>
-      <div class="row vol"><span>Volume des effets</span><input type="range" id="volSfx" min="0" max="100" step="5" aria-label="Volume des effets sonores"></div>
-      <label class="row sw"><span>Vibrations (sur mobile)</span><input type="checkbox" id="optVibrate"><i></i></label>
-      <div class="row test"><span>Écouter</span>
-        <div class="seg" role="group" aria-label="Écouter les sons">
-          <button type="button" id="tMusic">Musique</button>
-          <button type="button" id="tWin">Victoire</button>
-          <button type="button" id="tLose">Défaite</button>
-        </div>
-      </div>
-    </section>
-
-    <button id="startBtn" class="cta reveal" type="button">Lancer la partie</button>
-    <p class="foot reveal">Les questions changent à chaque partie. Aucune connexion n'est nécessaire une fois l'application chargée.</p>
-  </section>
-
-  <!-- ═════════ QUIZ ═════════ -->
-  <section id="quiz" class="screen" aria-label="Quiz">
-    <div class="qtop">
-      <button id="quitBtn" class="ghost" type="button" aria-label="Quitter la partie">✕</button>
-      <button id="musicBtn" class="ghost" type="button" aria-label="Activer ou couper la musique" aria-pressed="true">♪</button>
-      <div class="qinfo">
-        <span id="qcount">1 / 20</span>
-        <span id="qscore">0 pts</span>
-        <span id="qstreak" class="streak">série 0</span>
-      </div>
-      <div id="ring" class="ring" aria-hidden="true">
-        <svg viewBox="0 0 48 48"><circle class="tr" cx="24" cy="24" r="20"/><circle class="fg" id="ringfg" cx="24" cy="24" r="20"/></svg>
-        <b id="ringtxt">20</b>
-      </div>
+      <button id="btnInstall" class="link" type="button" hidden>Installer l'application</button>
+      <p class="muted small" id="bestLine"></p>
+      <p class="muted small" id="netLine"></p>
+      <p class="muted small" id="iosTip" hidden></p>
     </div>
-    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
 
-    <article id="qcard" class="qcard tilt" data-max="3">
-      <span id="qtag" class="tag"></span>
-      <h2 id="qtext"></h2>
+    <!-- État « partie en cours » (même carte, même page) -->
+    <div id="play" hidden>
+      <div class="play-top">
+        <button id="btnQuit" class="iconbtn" type="button" aria-label="Quitter la partie" title="Quitter">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <span id="qTag" class="tag"></span>
+        <div id="ring" class="ring" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><circle class="tr" cx="24" cy="24" r="20"/><circle class="fg" id="ringfg" cx="24" cy="24" r="20"/></svg>
+          <b id="ringtxt">20</b>
+        </div>
+      </div>
+      <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+      <div class="meta-row">
+        <span id="qCount">1 / 20</span>
+        <span id="qScore">0 / 100</span>
+        <span id="qStreak">série 0</span>
+      </div>
+
+      <h2 id="qText" class="q"></h2>
       <p id="fmtHint" class="fmt" hidden></p>
-      <div id="opts" class="opts"></div>
+      <div id="opts" class="opts" role="group" aria-label="Réponses possibles"></div>
       <form id="openForm" class="open" autocomplete="off" hidden>
         <input id="openIn" type="text" placeholder="Votre réponse…" aria-label="Votre réponse" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
         <div class="open-b">
-          <button class="cta sm" type="submit">Valider</button>
-          <button id="skipBtn" class="ghost-btn" type="button">Je ne sais pas</button>
+          <button class="btn primary" type="submit">Valider</button>
+          <button id="skipBtn" class="btn" type="button">Je ne sais pas</button>
         </div>
       </form>
-      <div id="fb" class="fb" hidden>
+
+      <div id="fb" class="fb" hidden role="status" aria-live="polite">
         <p id="fbTitle" class="fb-t"></p>
         <p id="fbAns" class="fb-a" hidden></p>
         <p id="fbFmt" class="fb-f" hidden></p>
         <p id="fbExp" class="fb-e"></p>
-        <div class="fb-b">
-          <button id="overBtn" class="ghost-btn" type="button" hidden>Ma réponse était correcte</button>
-          <button id="nextBtn" class="cta sm" type="button">Question suivante</button>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <!-- ═════════ RÉSULTATS ═════════ -->
-  <section id="result" class="screen" aria-label="Résultats">
-    <div class="rcard tilt" data-max="4">
-      <span class="tag">Résultats</span>
-      <div class="rring">
-        <svg viewBox="0 0 120 120"><circle class="tr" cx="60" cy="60" r="52"/><circle class="fg" id="rfg" cx="60" cy="60" r="52"/></svg>
-        <div><b id="rpct">0 %</b><small id="rscore"></small></div>
-      </div>
-      <h2 id="rtitle"></h2>
-      <p id="rsub" class="sub"></p>
-      <div class="rstats" id="rstats"></div>
-      <div class="rbtns">
-        <button id="againBtn" class="cta" type="button">Rejouer</button>
-        <button id="homeBtn" class="ghost-btn" type="button">Accueil</button>
+        <div class="fb-b"><button id="nextBtn" class="btn primary" type="button">Question suivante</button></div>
       </div>
     </div>
-    <section class="panel" id="revPanel">
-      <h2>À revoir</h2>
-      <div id="review"></div>
-    </section>
   </section>
-
 </main>
+
+<!-- ───────── Fenêtres de dialogue ───────── -->
+
+<dialog id="dlgNotions" aria-labelledby="tNotions">
+  <div class="dlg-h"><h2 id="tNotions">Notions et langages</h2><button class="iconbtn" type="button" data-close aria-label="Fermer"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="dlg-b">
+    <input id="search" class="search" type="search" placeholder="Rechercher une notion, un langage…" aria-label="Rechercher une notion" autocomplete="off">
+    <div class="toolbar"><span id="selCount" class="muted small" aria-live="polite"></span><button id="allBtn" class="link" type="button">Tout sélectionner</button></div>
+    <div id="cats"></div>
+    <p id="noRes" class="muted" hidden>Aucune notion ne correspond à votre recherche.</p>
+  </div>
+  <div class="dlg-f"><button class="btn primary" type="button" data-close>Terminé</button></div>
+</dialog>
+
+<dialog id="dlgSettings" aria-labelledby="tSettings">
+  <div class="dlg-h"><h2 id="tSettings">Réglages</h2><button class="iconbtn" type="button" data-close aria-label="Fermer"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="dlg-b">
+    <h3 class="sec">Partie</h3>
+    <div class="row"><span>Nombre de questions</span>
+      <div class="seg" id="seg" role="group" aria-label="Nombre de questions">
+        <button type="button" data-n="10">10</button><button type="button" data-n="20">20</button><button type="button" data-n="25">25</button><button type="button" data-n="50">50</button><button type="button" data-n="100">100</button>
+      </div>
+    </div>
+    <p class="note" id="ptsNote"></p>
+    <label class="row sw"><span>Questions à réponse libre</span><input type="checkbox" id="optOpen"><i></i></label>
+    <label class="row sw"><span>Chronomètre par question</span><input type="checkbox" id="optTimer"><i></i></label>
+
+    <h3 class="sec">Son</h3>
+    <label class="row sw"><span>Musique pendant la partie</span><input type="checkbox" id="optMusic"><i></i></label>
+    <div class="row vol"><span>Volume de la musique</span><input type="range" id="volMusic" min="0" max="100" step="5" aria-label="Volume de la musique"></div>
+    <label class="row sw"><span>Effets sonores</span><input type="checkbox" id="optSfx"><i></i></label>
+    <div class="row vol"><span>Volume des effets</span><input type="range" id="volSfx" min="0" max="100" step="5" aria-label="Volume des effets sonores"></div>
+    <label class="row sw"><span>Vibrations (mobile)</span><input type="checkbox" id="optVibrate"><i></i></label>
+    <div class="row"><span>Écouter</span>
+      <div class="seg" role="group" aria-label="Écouter les sons">
+        <button type="button" id="tIntro">Entrée</button><button type="button" id="tMusic">Musique</button><button type="button" id="tWin">Victoire</button><button type="button" id="tLose">Défaite</button>
+      </div>
+    </div>
+
+    <h3 class="sec">Apparence</h3>
+    <div class="row"><span>Thème</span>
+      <div class="seg" id="segTheme" role="group" aria-label="Thème">
+        <button type="button" data-t="auto">Auto</button><button type="button" data-t="light">Clair</button><button type="button" data-t="dark">Sombre</button>
+      </div>
+    </div>
+
+    <h3 class="sec">Application</h3>
+    <div class="row"><span>Installer sur cet appareil</span><button id="btnInstall2" class="btn" type="button" hidden>Installer</button><span id="installNA" class="muted small">Déjà installée ou non disponible ici</span></div>
+    <div class="row"><span>Réinitialiser les statistiques</span><button id="btnReset" class="btn danger" type="button">Réinitialiser</button></div>
+    <p class="note" id="verLine"></p>
+  </div>
+  <div class="dlg-f"><button class="btn primary" type="button" data-close>Terminé</button></div>
+</dialog>
+
+<dialog id="dlgStats" aria-labelledby="tStats">
+  <div class="dlg-h"><h2 id="tStats">Statistiques</h2><button class="iconbtn" type="button" data-close aria-label="Fermer"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="dlg-b">
+    <div class="stats" id="stats"></div>
+    <h3 class="sec">Notions à travailler</h3>
+    <div id="weak" class="bars"></div>
+    <h3 class="sec">Toutes les notions jouées</h3>
+    <div id="allStats" class="bars"></div>
+  </div>
+  <div class="dlg-f"><button class="btn primary" type="button" data-close>Fermer</button></div>
+</dialog>
+
+<dialog id="dlgHelp" aria-labelledby="tHelp">
+  <div class="dlg-h"><h2 id="tHelp">Comment jouer</h2><button class="iconbtn" type="button" data-close aria-label="Fermer"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="dlg-b prose">
+    <h3 class="sec">Le principe</h3>
+    <p>Choisissez vos notions, puis répondez aux questions. Elles sont tirées au hasard à chaque partie, avec les réponses mélangées.</p>
+    <h3 class="sec">Les points</h3>
+    <p>Chaque partie vaut <b>100 points</b> au total. Chaque question vaut le même nombre de points : 100 divisé par le nombre de questions. Il n'y a ni bonus de vitesse, ni points variables.</p>
+    <h3 class="sec">Les réponses libres</h3>
+    <p>Le format de réponse exigé est affiché sous la question (par exemple une balise avec ses chevrons, un nom suivi de parenthèses ou une commande complète). Une réponse qui ne respecte pas ce format est comptée comme non trouvée, même si le fond est bon.</p>
+    <h3 class="sec">Raccourcis clavier</h3>
+    <p><kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> ou <kbd>1</kbd> à <kbd>4</kbd> pour répondre, <kbd>Entrée</kbd> pour passer à la suite.</p>
+    <h3 class="sec">Hors ligne et installation</h3>
+    <p>Une fois chargée, l'application fonctionne sans connexion. Vous pouvez l'installer sur votre écran d'accueil depuis les réglages ou le menu de votre navigateur.</p>
+  </div>
+  <div class="dlg-f"><button class="btn primary" type="button" data-close>Compris</button></div>
+</dialog>
+
+<dialog id="dlgResult" aria-labelledby="rtitle">
+  <div class="dlg-b result">
+    <span class="tag">Résultats</span>
+    <div class="rring">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="52"/><circle class="fg" id="rfg" cx="60" cy="60" r="52"/></svg>
+      <div><b id="rpct">0</b><small>/ 100</small></div>
+    </div>
+    <h2 id="rtitle"></h2>
+    <p id="rsub" class="muted"></p>
+    <div class="stats" id="rstats"></div>
+    <details id="revBox" class="rev-box"><summary id="revSum">À revoir</summary><div id="review"></div></details>
+  </div>
+  <div class="dlg-f stack">
+    <button id="againBtn" class="btn primary" type="button">Rejouer</button>
+    <button id="errBtn" class="btn" type="button" hidden>Rejouer mes erreurs</button>
+    <button class="btn" type="button" data-close>Fermer</button>
+  </div>
+</dialog>
+
+<dialog id="dlgConfirm" aria-labelledby="cfTitle">
+  <form method="dialog">
+    <div class="dlg-b"><h2 id="cfTitle"></h2><p id="cfMsg" class="muted"></p></div>
+    <div class="dlg-f"><button class="btn" value="cancel" id="cfCancel">Annuler</button><button class="btn primary" value="ok" id="cfOk">Confirmer</button></div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/questions.js"></script>
 <script src="js/themes.js"></script>
